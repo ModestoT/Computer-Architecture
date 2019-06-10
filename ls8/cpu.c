@@ -6,6 +6,7 @@
 #define DATA_LEN 6
 #define HLT 0b00000001
 #define LDI 0b10000010
+#define PRN 0b01000111
 
 /**
  * Load the binary bytes from a .ls8 source file into a RAM array
@@ -80,6 +81,12 @@ void cpu_run(struct cpu *cpu)
         val = operandB;
         cpu->registers[index] = val;
         cpu->pc+=3;
+        break;
+      
+      case PRN:
+        index = operandA;
+        printf("%d\n", cpu->registers[index]);
+        cpu->pc+=2;
         break;
       case HLT:
         running = 0;
