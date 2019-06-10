@@ -1,9 +1,11 @@
 #include "cpu.h"
 #include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #define DATA_LEN 6
 #define HLT 0b00000001
+#define LDI 0b10000010
 
 /**
  * Load the binary bytes from a .ls8 source file into a RAM array
@@ -28,6 +30,16 @@ void cpu_load(struct cpu *cpu)
 
   // TODO: Replace this with something less hard-coded
 }
+
+unsigned char cpu_ram_read(struct cpu *cpu, int index)
+{
+  return cpu->ram[index];
+};
+
+void cpu_ram_write(struct cpu *cpu, int index, int value)
+{
+  cpu->ram[index] = value;
+};
 
 /**
  * ALU
@@ -58,14 +70,21 @@ void cpu_run(struct cpu *cpu)
     // 3. Get the appropriate value(s) of the operands following this instruction
     unsigned char operandA = cpu_ram_read(cpu, cpu->pc+1); 
     unsigned char operandB = cpu_ram_read(cpu, cpu->pc+2);
+    int val;
+    int index;
     // 4. switch() over it to decide on a course of action.
     switch (ir) {
       // 5. Do whatever the instruction should do according to the spec.
+      case LDI:
+        index = operandA;
+        val = operandB;
+        cpu->registers[index] = val;
+        cpu->pc+=3;
+        break;
       case HLT:
         running = 0;
-        cpu->pc++;
         break;
-      
+
       default:
         printf("Unknown instruction %02x at address %02x\n", ir, cpu->pc);
         exit(1);
@@ -88,13 +107,3 @@ void cpu_init(struct cpu *cpu)
   // set cpu Memory array to be all 0's
   memset(cpu->ram, 0, sizeof(cpu->ram));
 }
-
-unsigned char cpu_ram_read(struct cpu *cpu, int index)
-{
-  return cpu->ram[index];
-};
-
-void cpu_ram_write(struct cpu *cpu, int index, int value)
-{
-  cpu->ram[index] = value;
-};
