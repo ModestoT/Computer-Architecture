@@ -1,4 +1,5 @@
 #include "cpu.h"
+#include <string.h>
 
 #define DATA_LEN 6
 
@@ -64,6 +65,13 @@ void cpu_run(struct cpu *cpu)
 void cpu_init(struct cpu *cpu)
 {
   // TODO: Initialize the PC and other special registers
+
+  // set cpu PC to 0
+  cpu->pc = 0;
+  // Set cpu registers array to be all 0's 
+  memset(cpu->registers, 0, sizeof(cpu->registers));
+  // set cpu Memory array to be all 0's
+  memset(cpu->memory, 0, sizeof(cpu->memory));
 }
 
 unsigned char cpu_ram_read(struct cpu *cpu, int index)
