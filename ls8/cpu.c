@@ -1,7 +1,9 @@
 #include "cpu.h"
 #include <string.h>
+#include <stdlib.h>
 
 #define DATA_LEN 6
+#define HLT 0b00000001
 
 /**
  * Load the binary bytes from a .ls8 source file into a RAM array
@@ -51,11 +53,24 @@ void cpu_run(struct cpu *cpu)
   while (running) {
     // TODO
     // 1. Get the value of the current instruction (in address PC).
+    unsigned char ir = cpu_ram_read(cpu, cpu->pc);
     // 2. Figure out how many operands this next instruction requires
     // 3. Get the appropriate value(s) of the operands following this instruction
+    unsigned char operandA = cpu_ram_read(cpu, cpu->pc+1); 
+    unsigned char operandB = cpu_ram_read(cpu, cpu->pc+2);
     // 4. switch() over it to decide on a course of action.
-    // 5. Do whatever the instruction should do according to the spec.
-    // 6. Move the PC to the next instruction.
+    switch (ir) {
+      // 5. Do whatever the instruction should do according to the spec.
+      case HLT:
+        running = 0;
+        cpu->pc++;
+        break;
+      
+      default:
+        printf("Unknown instruction %02x at address %02x\n", ir, cpu->pc);
+        exit(1);
+      // 6. Move the PC to the next instruction.
+    }
   }
 }
 
@@ -71,15 +86,15 @@ void cpu_init(struct cpu *cpu)
   // Set cpu registers array to be all 0's 
   memset(cpu->registers, 0, sizeof(cpu->registers));
   // set cpu Memory array to be all 0's
-  memset(cpu->memory, 0, sizeof(cpu->memory));
+  memset(cpu->ram, 0, sizeof(cpu->ram));
 }
 
 unsigned char cpu_ram_read(struct cpu *cpu, int index)
 {
-  return cpu->memory[index];
+  return cpu->ram[index];
 };
 
 void cpu_ram_write(struct cpu *cpu, int index, int value)
 {
-  cpu->memory[index] = value;
+  cpu->ram[index] = value;
 };
