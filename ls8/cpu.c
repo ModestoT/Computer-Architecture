@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define DATA_LEN 6
+#define DATA_LEN 1024
 #define HLT 0b00000001
 #define LDI 0b10000010
 #define PRN 0b01000111
@@ -11,25 +11,35 @@
 /**
  * Load the binary bytes from a .ls8 source file into a RAM array
  */
-void cpu_load(struct cpu *cpu)
+void cpu_load(struct cpu *cpu, char *filename)
 {
-  char data[DATA_LEN] = {
-    // From print8.ls8
-    0b10000010, // LDI R0,8
-    0b00000000,
-    0b00001000,
-    0b01000111, // PRN R0
-    0b00000000,
-    0b00000001  // HLT
-  };
-
-  int address = 0;
-
-  for (int i = 0; i < DATA_LEN; i++) {
-    cpu->ram[address++] = data[i];
-  }
+  FILE *fp; // File pointer
+  char data[DATA_LEN];
+  int address = 0; // index of current position in memory array
 
   // TODO: Replace this with something less hard-coded
+  fp = fopen(filename, "r");
+
+  if (fp == NULL){
+    fprintf(stderr, "File not found please try again");
+    exit(1);
+  }
+
+  // loop through the file to add the data to memory
+  while(fgets(data, DATA_LEN, fp) != NULL){
+    char *endptr;
+    // convert the string data in the file into a number value in base 2
+    unsigned char val = strtoul(data, &endptr, 2);
+
+    // if the endptr pointer value is equal to the memory address of the start of the data skip that line
+    if (endptr == data){
+      continue;
+    }
+
+    // add the converted data value to the memory array
+    cpu->ram[address] = val;
+    address++;
+  }
 }
 
 unsigned char cpu_ram_read(struct cpu *cpu, int index)
@@ -82,7 +92,6 @@ void cpu_run(struct cpu *cpu)
         val = operandB;
         cpu->registers[index] = val;
         break;
-      
       case PRN:
         index = operandA;
         printf("%d\n", cpu->registers[index]);
