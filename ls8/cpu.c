@@ -7,6 +7,7 @@
 #define HLT 0b00000001
 #define LDI 0b10000010
 #define PRN 0b01000111
+#define MUL 0b10100010
 
 /**
  * Load the binary bytes from a .ls8 source file into a RAM array
@@ -99,7 +100,9 @@ void cpu_run(struct cpu *cpu)
       case HLT:
         running = 0;
         break;
-
+      case MUL:
+        cpu->registers[operandA] = cpu->registers[operandA] * cpu->registers[operandB];
+        break;
       default:
         printf("Unknown instruction %02x at address %02x\n", ir, cpu->pc);
         exit(1);
