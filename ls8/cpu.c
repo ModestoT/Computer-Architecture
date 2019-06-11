@@ -68,6 +68,7 @@ void cpu_run(struct cpu *cpu)
     // 1. Get the value of the current instruction (in address PC).
     unsigned char ir = cpu_ram_read(cpu, cpu->pc);
     // 2. Figure out how many operands this next instruction requires
+    int num_operands = (ir >> 6) + 1;
     // 3. Get the appropriate value(s) of the operands following this instruction
     unsigned char operandA = cpu_ram_read(cpu, cpu->pc+1); 
     unsigned char operandB = cpu_ram_read(cpu, cpu->pc+2);
@@ -80,13 +81,11 @@ void cpu_run(struct cpu *cpu)
         index = operandA;
         val = operandB;
         cpu->registers[index] = val;
-        cpu->pc+=3;
         break;
       
       case PRN:
         index = operandA;
         printf("%d\n", cpu->registers[index]);
-        cpu->pc+=2;
         break;
       case HLT:
         running = 0;
@@ -95,8 +94,9 @@ void cpu_run(struct cpu *cpu)
       default:
         printf("Unknown instruction %02x at address %02x\n", ir, cpu->pc);
         exit(1);
-      // 6. Move the PC to the next instruction.
     }
+    // 6. Move the PC to the next instruction.
+    cpu->pc+=num_operands;
   }
 }
 
