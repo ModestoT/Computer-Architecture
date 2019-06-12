@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #define DATA_LEN 1024
-
+#define SP 7  // Stack pointer index value
 /**
  * Load the binary bytes from a .ls8 source file into a RAM array
  */
@@ -93,17 +93,37 @@ void cpu_run(struct cpu *cpu)
         val = operandB;
         cpu->registers[index] = val;
         break;
+
       case PRN:
         index = operandA;
         printf("%d\n", cpu->registers[index]);
         break;
+
       case HLT:
         running = 0;
         break;
+
       case MUL:
         //cpu->registers[operandA] = cpu->registers[operandA] * cpu->registers[operandB];
-        alu(cpu, ir, operandA, operandB);
+        alu(cpu, MUL, operandA, operandB);
         break;
+
+      case PUSH:
+        // decrement the Stack Pointer 
+        cpu->registers[SP]--;
+        // Copy the value in the given register to the address pointed to by SP
+        val = cpu->registers[operandA];
+        cpu->ram[cpu->registers[SP]] = val;
+        break;
+
+      case POP:
+        // Copy the value from the address pointed to by SP to the given register.
+        val = cpu->ram[cpu->registers[SP]];
+        cpu->registers[operandA] = val;
+        // Increment SP.
+        cpu->registers[SP]++;
+        break;
+
       default:
         printf("Unknown instruction %02x at address %02x\n", ir, cpu->pc);
         exit(1);
@@ -124,6 +144,8 @@ void cpu_init(struct cpu *cpu)
   cpu->pc = 0;
   // Set cpu registers array to be all 0's 
   memset(cpu->registers, 0, sizeof(cpu->registers));
+  // set cpu register 7 as the stack pointer
+  cpu->registers[SP] = 0xF4;
   // set cpu Memory array to be all 0's
   memset(cpu->ram, 0, sizeof(cpu->ram));
 }
