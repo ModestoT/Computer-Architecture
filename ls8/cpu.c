@@ -4,10 +4,6 @@
 #include <stdlib.h>
 
 #define DATA_LEN 1024
-#define HLT 0b00000001
-#define LDI 0b10000010
-#define PRN 0b01000111
-#define MUL 0b10100010
 
 /**
  * Load the binary bytes from a .ls8 source file into a RAM array
@@ -58,12 +54,16 @@ void cpu_ram_write(struct cpu *cpu, int index, int value)
  */
 void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB)
 {
-  switch (op) {
-    case ALU_MUL:
+  switch ((int)op) {
+    case MUL:
       // TODO
+      cpu->registers[regA] = cpu->registers[regA] * cpu->registers[regB];
       break;
 
     // TODO: implement more ALU ops
+    default:
+      printf("Unknown instruction %02x at address %02x\n", op, cpu->pc);
+      exit(1);
   }
 }
 
@@ -101,7 +101,8 @@ void cpu_run(struct cpu *cpu)
         running = 0;
         break;
       case MUL:
-        cpu->registers[operandA] = cpu->registers[operandA] * cpu->registers[operandB];
+        //cpu->registers[operandA] = cpu->registers[operandA] * cpu->registers[operandB];
+        alu(cpu, ir, operandA, operandB);
         break;
       default:
         printf("Unknown instruction %02x at address %02x\n", ir, cpu->pc);

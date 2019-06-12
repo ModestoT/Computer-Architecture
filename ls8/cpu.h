@@ -7,7 +7,7 @@ struct cpu {
   // PC
   int pc;
   // registers (array)
-  unsigned char registers[256];
+  unsigned char registers[8];
   // ram (array)
   unsigned char ram[256];
 };
@@ -23,8 +23,10 @@ enum alu_op {
 // These use binary literals. If these aren't available with your compiler, hex
 // literals should be used.
 
-#define LDI  0b10000010
-#define PRN  0b01000111
+#define HLT 0b00000001
+#define LDI 0b10000010
+#define PRN 0b01000111
+#define MUL 0b10100010
 // TODO: more instructions here. These can be used in cpu_run().
 
 // Function declarations
