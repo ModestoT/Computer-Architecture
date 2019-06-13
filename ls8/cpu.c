@@ -66,7 +66,21 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
       exit(1);
   }
 }
+// void trace(struct cpu *cpu)
+// {
+//     printf("%02X | ", cpu->pc);
 
+//     printf("%02X %02X %02X |",
+//         cpu_ram_read(cpu, cpu->pc),
+//         cpu_ram_read(cpu, cpu->pc + 1),
+//         cpu_ram_read(cpu, cpu->pc + 2));
+
+//     for (int i = 0; i < 8; i++) {
+//         printf(" %02X", cpu->registers[i]);
+//     }
+
+//     printf("\n");
+// }
 /**
  * Run the CPU
  */
@@ -80,11 +94,14 @@ void cpu_run(struct cpu *cpu)
     unsigned char ir = cpu_ram_read(cpu, cpu->pc);
     // 2. Figure out how many operands this next instruction requires
     int num_operands = (ir >> 6) + 1;
+    // creates a mask that compares the 4th bit to check if this instruction sets the PC or not, 1 means it does
+    int is_setting_pc = ((ir) & (1 << 4));
     // 3. Get the appropriate value(s) of the operands following this instruction
     unsigned char operandA = cpu_ram_read(cpu, cpu->pc+1); 
     unsigned char operandB = cpu_ram_read(cpu, cpu->pc+2);
     int val;
     int index;
+    // trace(cpu);
     // 4. switch() over it to decide on a course of action.
     switch (ir) {
       // 5. Do whatever the instruction should do according to the spec.
@@ -124,12 +141,32 @@ void cpu_run(struct cpu *cpu)
         cpu->registers[SP]++;
         break;
 
+      case CALL:
+        // push the next instruction address after the CALL instruction onto the stack
+        cpu->registers[SP]--;
+        index = cpu->pc + 2;
+        cpu->ram[cpu->registers[SP]] = index;
+
+        // set the PC to the subroutine instruction address
+        cpu->pc = cpu->registers[operandA];
+        break;
+
+      case RET:
+        // pop the address saved from CALL instruction from the stack
+        index = cpu->ram[cpu->registers[SP]];
+        cpu->registers[SP]++;
+        // set the PC to the address that was poped from the stack
+        cpu->pc = index;
+        break;
+
       default:
         printf("Unknown instruction %02x at address %02x\n", ir, cpu->pc);
         exit(1);
     }
     // 6. Move the PC to the next instruction.
-    cpu->pc+=num_operands;
+    if (is_setting_pc == 0){
+      cpu->pc+=num_operands;
+    }
   }
 }
 
