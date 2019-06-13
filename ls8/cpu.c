@@ -54,13 +54,16 @@ void cpu_ram_write(struct cpu *cpu, int index, int value)
  */
 void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB)
 {
-  switch ((int)op) {
-    case MUL:
+  switch (op) {
+    case ALU_MUL:
       // TODO
       cpu->registers[regA] = cpu->registers[regA] * cpu->registers[regB];
       break;
 
     // TODO: implement more ALU ops
+    case ALU_ADD:
+      cpu->registers[regA] = cpu->registers[regA] + cpu->registers[regB];
+      break;
     default:
       printf("Unknown instruction %02x at address %02x\n", op, cpu->pc);
       exit(1);
@@ -122,7 +125,7 @@ void cpu_run(struct cpu *cpu)
 
       case MUL:
         //cpu->registers[operandA] = cpu->registers[operandA] * cpu->registers[operandB];
-        alu(cpu, MUL, operandA, operandB);
+        alu(cpu, ALU_MUL, operandA, operandB);
         break;
 
       case PUSH:
@@ -157,6 +160,10 @@ void cpu_run(struct cpu *cpu)
         cpu->registers[SP]++;
         // set the PC to the address that was poped from the stack
         cpu->pc = index;
+        break;
+
+      case ADD:
+        alu(cpu, ALU_ADD, operandA, operandB);
         break;
 
       default:
