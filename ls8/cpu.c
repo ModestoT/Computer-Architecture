@@ -69,6 +69,13 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
       exit(1);
   }
 }
+
+void stack_push(struct cpu *cpu, unsigned char val){
+  // decrement the Stack Pointer 
+  cpu->registers[SP]--;
+  // Copy the value in the given register to the address pointed to by SP
+  cpu->ram[cpu->registers[SP]] = val;
+}
 // void trace(struct cpu *cpu)
 // {
 //     printf("%02X | ", cpu->pc);
@@ -129,11 +136,12 @@ void cpu_run(struct cpu *cpu)
         break;
 
       case PUSH:
-        // decrement the Stack Pointer 
-        cpu->registers[SP]--;
-        // Copy the value in the given register to the address pointed to by SP
-        val = cpu->registers[operandA];
-        cpu->ram[cpu->registers[SP]] = val;
+        // // decrement the Stack Pointer 
+        // cpu->registers[SP]--;
+        // // Copy the value in the given register to the address pointed to by SP
+        // val = cpu->registers[operandA];
+        // cpu->ram[cpu->registers[SP]] = val;
+        stack_push(cpu, cpu->registers[operandA]);
         break;
 
       case POP:
@@ -146,10 +154,10 @@ void cpu_run(struct cpu *cpu)
 
       case CALL:
         // push the next instruction address after the CALL instruction onto the stack
-        cpu->registers[SP]--;
+        // cpu->registers[SP]--;
         index = cpu->pc + 2;
-        cpu->ram[cpu->registers[SP]] = index;
-
+        // cpu->ram[cpu->registers[SP]] = index;
+        stack_push(cpu, index);
         // set the PC to the subroutine instruction address
         cpu->pc = cpu->registers[operandA];
         break;
