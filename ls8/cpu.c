@@ -142,33 +142,20 @@ void cpu_run(struct cpu *cpu)
         break;
 
       case MUL:
-        //cpu->registers[operandA] = cpu->registers[operandA] * cpu->registers[operandB];
         alu(cpu, ALU_MUL, operandA, operandB);
         break;
 
       case PUSH:
-        // // decrement the Stack Pointer 
-        // cpu->registers[SP]--;
-        // // Copy the value in the given register to the address pointed to by SP
-        // val = cpu->registers[operandA];
-        // cpu->ram[cpu->registers[SP]] = val;
         stack_push(cpu, cpu->registers[operandA]);
         break;
 
       case POP:
-        // Copy the value from the address pointed to by SP to the given register.
-        // val = cpu->ram[cpu->registers[SP]];
-        // cpu->registers[operandA] = val;
-        // // Increment SP.
-        // cpu->registers[SP]++;
         stack_pop(cpu, operandA);
         break;
 
       case CALL:
         // push the next instruction address after the CALL instruction onto the stack
-        // cpu->registers[SP]--;
         index = cpu->pc + 2;
-        // cpu->ram[cpu->registers[SP]] = index;
         stack_push(cpu, index);
         // set the PC to the subroutine instruction address
         cpu->pc = cpu->registers[operandA];
@@ -177,7 +164,6 @@ void cpu_run(struct cpu *cpu)
       case RET:
         // pop the address saved from CALL instruction from the stack
         index = stack_pop(cpu, operandA);
-        // cpu->registers[SP]++;
         // set the PC to the address that was poped from the stack
         cpu->pc = index;
         break;
