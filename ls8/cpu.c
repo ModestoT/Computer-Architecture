@@ -64,6 +64,7 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
     case ALU_ADD:
       cpu->registers[regA] = cpu->registers[regA] + cpu->registers[regB];
       break;
+
     default:
       printf("Unknown instruction %02x at address %02x\n", op, cpu->pc);
       exit(1);
@@ -79,13 +80,14 @@ void stack_push(struct cpu *cpu, unsigned char val){
 
 unsigned char stack_pop(struct cpu *cpu, unsigned char reg){
   // Copy the value from the address pointed to by SP to the given register.
-  unsigned char poped = cpu->ram[cpu->registers[SP]];
-  cpu->registers[reg] = poped;
+  unsigned char popped = cpu->ram[cpu->registers[SP]];
+  cpu->registers[reg] = popped;
   // Increment SP.
   cpu->registers[SP]++;
   
-  return poped;
+  return popped;
 }
+
 // void trace(struct cpu *cpu)
 // {
 //     printf("%02X | ", cpu->pc);
@@ -126,33 +128,40 @@ void cpu_run(struct cpu *cpu)
     // 4. switch() over it to decide on a course of action.
     switch (ir) {
       // 5. Do whatever the instruction should do according to the spec.
+
+      // LDI instruction, Saves a value to the provided register index
       case LDI:
         index = operandA;
         val = operandB;
         cpu->registers[index] = val;
         break;
 
+      // PRN instruction, prints the value held in the provided register index
       case PRN:
         index = operandA;
         printf("%d\n", cpu->registers[index]);
         break;
 
+      // HLT instruction, stops the program
       case HLT:
         running = 0;
         break;
 
+      // MUL instruction, multiplies two values from the provided register indices
       case MUL:
         alu(cpu, ALU_MUL, operandA, operandB);
         break;
-
+      // PUSH instruction, pushes the value from the provided register index onto the Stack 
       case PUSH:
         stack_push(cpu, cpu->registers[operandA]);
         break;
 
+      // POP instruction, pops the value from the stack onto the provided register index 
       case POP:
         stack_pop(cpu, operandA);
         break;
 
+      // CALL instruction, have to program run the instructions at the provided memory address, pushes the return address onto the stack
       case CALL:
         // push the next instruction address after the CALL instruction onto the stack
         index = cpu->pc + 2;
@@ -160,7 +169,8 @@ void cpu_run(struct cpu *cpu)
         // set the PC to the subroutine instruction address
         cpu->pc = cpu->registers[operandA];
         break;
-
+      
+      // RET instruction, has the program go back to the return address saved on the stack
       case RET:
         // pop the address saved from CALL instruction from the stack
         index = stack_pop(cpu, operandA);
@@ -168,6 +178,7 @@ void cpu_run(struct cpu *cpu)
         cpu->pc = index;
         break;
 
+      // ADD instruction, adds two values stored in the provided register indices together
       case ADD:
         alu(cpu, ALU_ADD, operandA, operandB);
         break;
