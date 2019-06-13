@@ -65,6 +65,20 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
       cpu->registers[regA] = cpu->registers[regA] + cpu->registers[regB];
       break;
 
+    case ALU_CMP:
+      // 00000LGE
+      if (cpu->registers[regA] == cpu->registers[regB]){
+        printf("Equal than\n");
+        cpu->flag = (cpu->flag | 0b00000001);
+      } else if (cpu->registers[regA] < cpu->registers[regB]){
+        printf("Less than\n");
+        cpu->flag = (cpu->flag | 0b00000100);
+      } else {
+        printf("Greater than\n");
+        cpu->flag = (cpu->flag | 0b00000010);
+      }
+      break;
+
     default:
       printf("Unknown instruction %02x at address %02x\n", op, cpu->pc);
       exit(1);
@@ -113,11 +127,12 @@ void cpu_run(struct cpu *cpu)
 
   while (running) {
     // TODO
+    // printf("flag:%02X\n", (cpu->flag | 0b00000100 ));
     // 1. Get the value of the current instruction (in address PC).
     unsigned char ir = cpu_ram_read(cpu, cpu->pc);
     // 2. Figure out how many operands this next instruction requires
     int num_operands = (ir >> 6) + 1;
-    // creates a mask that compares the 4th bit to check if this instruction sets the PC or not, 1 means it does
+    // creates a mask that compares the 4th bit to check if this instruction sets the PC or not, number that is not 0 means it does
     int is_setting_pc = ((ir) & (1 << 4));
     // 3. Get the appropriate value(s) of the operands following this instruction
     unsigned char operandA = cpu_ram_read(cpu, cpu->pc+1); 
@@ -129,6 +144,26 @@ void cpu_run(struct cpu *cpu)
     switch (ir) {
       // 5. Do whatever the instruction should do according to the spec.
 
+      case CMP:
+        alu(cpu, ALU_CMP, operandA, operandB);
+        break;
+
+      case JEQ:
+        // printf("%02X\n", (cpu->flag) & 0b00000001);
+        if ( (cpu->flag) & 0b00000001){
+          cpu->pc = cpu->registers[operandA];
+        } else {
+          cpu->pc += num_operands;  
+        }
+        break;
+      
+      case LD:
+        cpu->registers[operandA] = cpu->ram[cpu->registers[operandB]];
+        break;
+
+      case PRA:
+        printf("%c\n",cpu->registers[operandA]);
+        break;
       // LDI instruction, Saves a value to the provided register index
       case LDI:
         index = operandA;
@@ -203,6 +238,8 @@ void cpu_init(struct cpu *cpu)
 
   // set cpu PC to 0
   cpu->pc = 0;
+  // set cpu flag to 0
+  cpu->flag = 0b00000000;
   // Set cpu registers array to be all 0's 
   memset(cpu->registers, 0, sizeof(cpu->registers));
   // set cpu register 7 as the stack pointer

@@ -6,6 +6,7 @@ struct cpu {
   // TODO
   // PC
   int pc;
+  unsigned char flag;
   // registers (array)
   unsigned char registers[8];
   // ram (array)
@@ -16,7 +17,8 @@ struct cpu {
 enum alu_op {
 	ALU_MUL,
 	// Add more here
-  ALU_ADD
+  ALU_ADD,
+  ALU_CMP
 };
 
 // Instructions
@@ -34,6 +36,13 @@ enum alu_op {
 #define CALL 0b01010000
 #define RET  0b00010001
 #define ADD  0b10100000
+#define CMP  0b10100111
+#define JEQ  0b01010101
+#define LD   0b10000011
+#define PRA  0b01001000
+#define INC  0b01100101
+#define DEC  0b01100110
+#define JMP  0b01010100
 // Function declarations
 
 extern void cpu_load(struct cpu *cpu, char *filename);
