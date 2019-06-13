@@ -76,6 +76,16 @@ void stack_push(struct cpu *cpu, unsigned char val){
   // Copy the value in the given register to the address pointed to by SP
   cpu->ram[cpu->registers[SP]] = val;
 }
+
+unsigned char stack_pop(struct cpu *cpu, unsigned char reg){
+  // Copy the value from the address pointed to by SP to the given register.
+  unsigned char poped = cpu->ram[cpu->registers[SP]];
+  cpu->registers[reg] = poped;
+  // Increment SP.
+  cpu->registers[SP]++;
+  
+  return poped;
+}
 // void trace(struct cpu *cpu)
 // {
 //     printf("%02X | ", cpu->pc);
@@ -91,6 +101,7 @@ void stack_push(struct cpu *cpu, unsigned char val){
 
 //     printf("\n");
 // }
+
 /**
  * Run the CPU
  */
@@ -146,10 +157,11 @@ void cpu_run(struct cpu *cpu)
 
       case POP:
         // Copy the value from the address pointed to by SP to the given register.
-        val = cpu->ram[cpu->registers[SP]];
-        cpu->registers[operandA] = val;
-        // Increment SP.
-        cpu->registers[SP]++;
+        // val = cpu->ram[cpu->registers[SP]];
+        // cpu->registers[operandA] = val;
+        // // Increment SP.
+        // cpu->registers[SP]++;
+        stack_pop(cpu, operandA);
         break;
 
       case CALL:
@@ -164,8 +176,8 @@ void cpu_run(struct cpu *cpu)
 
       case RET:
         // pop the address saved from CALL instruction from the stack
-        index = cpu->ram[cpu->registers[SP]];
-        cpu->registers[SP]++;
+        index = stack_pop(cpu, operandA);
+        // cpu->registers[SP]++;
         // set the PC to the address that was poped from the stack
         cpu->pc = index;
         break;
