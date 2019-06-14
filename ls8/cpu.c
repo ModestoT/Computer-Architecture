@@ -68,15 +68,22 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
     case ALU_CMP:
       // 00000LGE
       if (cpu->registers[regA] == cpu->registers[regB]){
-        printf("Equal than\n");
+        // printf("Equal to\n");
         cpu->flag = (cpu->flag | 0b00000001);
       } else if (cpu->registers[regA] < cpu->registers[regB]){
-        printf("Less than\n");
+        // printf("Less than\n");
         cpu->flag = (cpu->flag | 0b00000100);
       } else {
-        printf("Greater than\n");
+        // printf("Greater than\n");
         cpu->flag = (cpu->flag | 0b00000010);
       }
+      break;
+    
+    case ALU_INC:
+      cpu->registers[regA]++;
+      break;
+    case ALU_DEC:
+      cpu->registers[regA]--;
       break;
 
     default:
@@ -162,7 +169,19 @@ void cpu_run(struct cpu *cpu)
         break;
 
       case PRA:
-        printf("%c\n",cpu->registers[operandA]);
+        printf("%c",cpu->registers[operandA]);
+        break;
+      
+      case INC:
+        alu(cpu, ALU_INC, operandA, operandB);
+        break;
+      
+      case DEC:
+        alu(cpu, ALU_DEC, operandA, operandB);
+        break;
+      
+      case JMP:
+        cpu->pc = cpu->registers[operandA];
         break;
       // LDI instruction, Saves a value to the provided register index
       case LDI:
